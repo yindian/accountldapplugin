@@ -52,7 +52,8 @@ class AccountLDAP(Component):
         return handler
     
     def post_process_request(self, req, template, data, content_type):
-        if not req.remote_user or req.session.has_key('email'):
+        if not req.remote_user or req.session.get('email'):
+	    #self.log.info('req.remote_user:%s req.session:%s' % (str(req.remote_user), str(req.session)))
             return template, data, content_type 
         uid = req.remote_user.lower()
         name, email = self._getUserAttributes(uid)
@@ -69,7 +70,7 @@ class AccountLDAP(Component):
         if not req.authname or not req.session.has_key('email'):
             return
         yield ('metanav', self.MODULE_NAME,
-               tag.a(u'Contraseñas', href=req.href.accountldap()))
+               tag.a(u'Passwords', href=req.href.accountldap()))
     #
     #------------------------------------------------ IRequestHandler interface
     #
@@ -123,5 +124,5 @@ class AccountLDAP(Component):
         except ldap.LDAPError, e:
             self.log.error('Search LDAP problems. Check trac.ini ldap options')
             return ('', '')
-        self.log.info('%s - %s' % (data[0][1]['cn'][0], data[0][1]['mail'][0]))
-        return (data[0][1]['cn'][0], data[0][1]['mail'][0])
+        self.log.info('%s - %s' % (data[0][1]['displayName'][0], data[0][1]['mail'][0]))
+        return (data[0][1]['displayName'][0], data[0][1]['mail'][0])
